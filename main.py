@@ -2,46 +2,41 @@ import re
 
 def format_html(file_path):
     try:
-        with open(file_path, 'r', encoding="utf-8") as file:
-            lines = file.readlines()
+        with open(file_path, "r", encoding="utf-8") as file:
+            text = " ".join(file.read().strip().split())
         indent_level = 0
         formatted_lines = []
         taguri_self_closing = ["area", "base", "br", "col", "embed", "hr", "img", "input",
                                "link", "meta", "param", "source", "track", "wbr", "frame",
                                "command", "keygen", "menuitem"]
-
-        for line in lines:
-            line = line.strip()
-            if not line:
+        text = re.sub(r'<(\w+)[^>]*?>', r'<\1>', text) # remove attributes
+        tags = re.findall(r'<[^>]*?>', text)
+        for box in tags:
+            box = box.strip()  # remove leading/trailing spaces
+            if not box:  # skip empty strings
                 continue
 
-            # Remove attributes and inner text
-            line = re.sub(r'<(\w+)[^>]*>', r'<\1>', line)  # Simplify opening tags
-            line = re.sub(r'>.*?(?=<|$)', r'>', line)  # Remove inner text between tags
-
-            # Check if the line is a self-closing tag
+            # Check if the tag is self-closing
             is_self_closing = any(
-                re.match(fr'<{tag}[^>]*>$', line) for tag in taguri_self_closing
-            )
+                re.match(fr'<{tag}\s*/?>$', box, re.IGNORECASE) for tag in taguri_self_closing
+            ) or re.match(r'<![^>]+>$', box, re.IGNORECASE)
             if is_self_closing:
-                # Add the line without changing the indentation level
-                formatted_lines.append('    ' * indent_level + line)
+                formatted_lines.append('    ' * indent_level + box)
                 continue
 
             # Detect closing tags
-            if re.match(r'</[^>]+>', line):
+            if re.match(r'</[^>]+>$', box):
                 indent_level -= 1
 
             # Add the line with the correct indentation level
-            formatted_lines.append('    ' * indent_level + line)
+            formatted_lines.append('    ' * indent_level + box)
 
             # Detect opening tags that are not self-closing
-            if re.match(r'<[^/!][^>]*[^/]>$', line):
+            if re.match(r'<[^/][^>]*>$', box):
                 indent_level += 1
 
-        # Write the formatted result to a new file
-        output_file = file_path.replace('.html', '_formatted.html')
-        with open(output_file, 'w', encoding="utf-8") as file:
+        output_file = file_path.replace(".html", "_formatted.html")
+        with open(output_file, "w", encoding="utf-8") as file:
             file.write('\n'.join(formatted_lines))
 
         print(f"HTML formatted and written to: {output_file}")
@@ -53,5 +48,6 @@ def format_html(file_path):
 
 
 if __name__ == '__main__':
-    file_path = "index.html"
-    format_html(file_path)
+    print("Enter the HTML file name:")
+    user_input = input("> ").strip()
+    format_html(user_input)
