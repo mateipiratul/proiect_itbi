@@ -16,23 +16,19 @@ def format_html(file_path):
             if not box:  # skip empty strings
                 continue
 
-            # Check if the tag is self-closing
-            is_self_closing = any(
+            is_self_closing = any( # detect self-closing tags
                 re.match(fr'<{tag}\s*/?>$', box, re.IGNORECASE) for tag in taguri_self_closing
             ) or re.match(r'<![^>]+>$', box, re.IGNORECASE)
             if is_self_closing:
                 formatted_lines.append('    ' * indent_level + box)
                 continue
 
-            # Detect closing tags
-            if re.match(r'</[^>]+>$', box):
+            if re.match(r'</[^>]+>$', box): # detect closing tags
                 indent_level -= 1
 
-            # Add the line with the correct indentation level
             formatted_lines.append('    ' * indent_level + box)
 
-            # Detect opening tags that are not self-closing
-            if re.match(r'<[^/][^>]*>$', box):
+            if re.match(r'<[^/][^>]*>$', box): # detect opening tags
                 indent_level += 1
 
         output_file = file_path.replace(".html", "_formatted.html")
