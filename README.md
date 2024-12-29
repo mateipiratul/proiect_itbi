@@ -1,2 +1,2 @@
-# proiect_itbi
-proiectul meu si al lui Alexandru Stefan Tinica
+# HTMLPrettyPrinter
+Proiectul meu (al lui Cocu Matei-Iulian) și al lui Alexandru Ștefan Tinică!! 
