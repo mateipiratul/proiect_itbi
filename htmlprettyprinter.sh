@@ -3,10 +3,13 @@
 # Function to format an HTML file
 format_html() {
     input_file="$1"
-    output_file="${input_file%.html}_formatted.html"
+    output_file="format_tree.txt"
+
+    # Debug: Print the file path received
+    echo "File path received: '$input_file'"
 
     # Check if the file exists and is readable
-    if [[ ! -r "$input_file" ]]; then
+    if [ ! -f "$input_file" ]; then
         echo "Error: File cannot be opened or does not exist."
         exit 1
     fi
@@ -62,15 +65,27 @@ format_html() {
         fi
     done
 
+    # Ensure the output file exists
+    touch "$output_file"
+
     # Write the formatted content to the output file
     echo "$formatted_lines" > "$output_file"
     echo "HTML formatted and written to: $output_file"
 }
 
 # Main script execution
-if [[ $# -ne 1 ]]; then
-    echo "Usage: $0 <absolute-path-to-html-file>"
+echo "Enter the absolute path to the HTML file:"
+read -r input_file
+
+# Trim any leading or trailing spaces
+input_file=$(echo "$input_file" | xargs)
+
+# Debug: Confirm the input file exists
+if [ ! -e "$input_file" ]; then
+    echo "Debug: File does not exist at the path provided: $input_file"
     exit 1
 fi
 
-format_html "$1"
+# Pass the input to the function
+format_html "$input_file"
+exit 0
