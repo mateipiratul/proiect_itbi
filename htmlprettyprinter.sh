@@ -1,7 +1,7 @@
 #!/bin/bash
 
-# Function to format an HTML file
-format_html() {
+# Function to format an HTML file and display as a tree
+format_html_tree() {
     input_file="$1"
     output_file="format_tree.txt"
 
@@ -30,20 +30,19 @@ format_html() {
 
     # Define self-closing tags
     self_closing_tags=("area" "base" "br" "col" "embed" "hr" "img" "input" "link" "meta" "param" "source" "track" "wbr" "frame" "command" "keygen" "menuitem")
-
-    # Add <!DOCTYPE> to self-closing tag handling
     self_closing_tags+=("!DOCTYPE")
 
     # Initialize variables
     indent_level=0
     formatted_lines=()
+    indent_stack=()
 
     # Extract all tags
     tags=$(echo "$text" | grep -oP '<[^>]*?>')
 
+    # Process each tag
     for tag in $tags; do
-        # Trim spaces
-        tag=$(echo "$tag" | xargs)
+        tag=$(echo "$tag" | xargs) # Trim spaces
 
         # Check if the tag is self-closing
         is_self_closing=false
@@ -54,31 +53,47 @@ format_html() {
             fi
         done
 
-        if $is_self_closing; then
-            formatted_lines+=("$(printf '%*s%s' $((indent_level * 4)) '' "$tag")")
-            continue
-        fi
-
         # Check if the tag is a closing tag
         if echo "$tag" | grep -qE "^</[^>]+>$"; then
             indent_level=$((indent_level - 1))
+            indent_stack[$indent_level]=0
         fi
 
-        # Add the tag with proper indentation
-        formatted_lines+=("$(printf '%*s%s' $((indent_level * 4)) '' "$tag")")
+        # Determine the appropriate tree symbols
+        tree_prefix=""
+        for ((i = 0; i < indent_level; i++)); do
+            if [[ "${indent_stack[$i]}" -eq 1 ]]; then
+                tree_prefix+="│   "
+            else
+                tree_prefix+="    "
+            fi
+        done
 
-        # Check if the tag is an opening tag
-        if echo "$tag" | grep -qE "^<[^/][^>]*>$"; then
+        if [[ "$is_self_closing" == true ]]; then
+            tree_prefix+="├── "
+        elif echo "$tag" | grep -qE "^</[^>]+>$"; then
+            tree_prefix+="└── "
+        else
+            if [[ $indent_level -gt 0 ]]; then
+                tree_prefix+="├── "
+            else
+                tree_prefix+="└── "
+            fi
+        fi
+
+        # Add the tag to formatted lines
+        formatted_lines+=("${tree_prefix}${tag}")
+
+        # If the tag is an opening tag, increase indent
+        if echo "$tag" | grep -qE "^<[^/][^>]*>$" && [[ "$is_self_closing" == false ]]; then
+            indent_stack[$indent_level]=1
             indent_level=$((indent_level + 1))
         fi
     done
 
-    # Ensure the output file exists
-    touch "$output_file"
-
-    # Write the formatted content to the output file, joining lines with newline characters
+    # Write the formatted content to the output file
     printf "%s\n" "${formatted_lines[@]}" > "$output_file"
-    echo "HTML formatted and written to: $output_file"
+    echo "HTML tree formatted and written to: $output_file"
 }
 
 # Main script execution
@@ -100,5 +115,5 @@ if [ ! -e "$input_file" ]; then
 fi
 
 # Pass the input to the function
-format_html "$input_file"
+format_html_tree "$input_file"
 exit 0
