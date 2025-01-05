@@ -2,8 +2,8 @@
 │   ├── <head>
 │   │   ├── <title>
 │   │   └── </title>
-│   │   ├── <meta>
-│   │   ├── <meta>
+│   │   ├── <mEta>
+│   │   ├── <Meta>
 │   │   ├── <meta>
 │   │   ├── <meta>
 │   │   ├── <meta>
@@ -15,7 +15,7 @@
 │   │   ├── <link>
 │   └── </head>
 │   ├── <body>
-│   │   ├── <header>
+│   │   ├── <HEAder>
 │   │   │   ├── <nav>
 │   │   │   │   ├── <p>
 │   │   │   │   └── </p>

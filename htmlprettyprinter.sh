@@ -1,36 +1,33 @@
 #!/bin/bash
 
-# Function to format an HTML file and display as a tree
 format_html_tree() {
     input_file="$1"
     output_file="format_tree.txt"
 
-    # Debug: Print the file path received
     echo "File path received: '$input_file'"
 
-    # Check if the file exists and is readable
     if [ ! -f "$input_file" ]; then
         echo "Error: File cannot be opened or does not exist."
         exit 1
     fi
 
-    # Read the file and remove newlines/whitespace between tags
+    # stergere newline/whitespace
     text=$(tr -d '\n' < "$input_file" | sed 's/> *</></g')
 
-    # Remove comments (e.g., <!-- some comment -->)
+    # stergere comentarii
     text=$(echo "$text" | sed -E 's/<!--.*?-->//g')
 
-    # Remove the first line if it contains <!DOCTYPE>
+    # sterge <!DOCTYPE>
     if echo "$text" | grep -iqE '^<!DOCTYPE[^>]*>'; then
-        text=$(echo "$text" | sed 's/^<!DOCTYPE[^>]*>//')
+        text=$(echo "$text" | sed -E 's/^<![dD][^>]*>//')
     fi
 
     # Simplify tags while keeping < and >
     text=$(echo "$text" | sed -E 's/<([a-zA-Z0-9]+)[^>]*?>/<\1>/g')
 
     # Define self-closing tags
-    self_closing_tags=("area" "base" "br" "col" "embed" "hr" "img" "input" "link" "meta" "param" "source" "track" "wbr" "frame" "command" "keygen" "menuitem")
-    self_closing_tags+=("!DOCTYPE")
+    self_closing_tags=("area" "base" "br" "col" "embed" "hr" "img" "input" "link" "meta" "param" "source" "track" "wbr" "frame" "command" "keygen" "menuitem" "!DOCTYPE")
+    # self_closing_tags+=("!DOCTYPE")
 
     # Initialize variables
     indent_level=0
