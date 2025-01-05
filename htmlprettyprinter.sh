@@ -28,7 +28,7 @@ format_html() {
 
     # Initialize variables
     indent_level=0
-    formatted_lines=""
+    formatted_lines=()
 
     # Extract all tags
     tags=$(echo "$text" | grep -oP '<[^>]*?>')
@@ -47,7 +47,7 @@ format_html() {
         done
 
         if $is_self_closing; then
-            formatted_lines+="$(printf '%*s%s\n' $((indent_level * 4)) '' "$tag")"
+            formatted_lines+=("$(printf '%*s%s' $((indent_level * 4)) '' "$tag")")
             continue
         fi
 
@@ -56,8 +56,8 @@ format_html() {
             indent_level=$((indent_level - 1))
         fi
 
-        # Add the tag with indentation
-        formatted_lines+="$(printf '%*s%s\n' $((indent_level * 4)) '' "$tag")"
+        # Add the tag with proper indentation
+        formatted_lines+=("$(printf '%*s%s' $((indent_level * 4)) '' "$tag")")
 
         # Check if the tag is an opening tag
         if echo "$tag" | grep -qE "^<[^/][^>]*>$"; then
@@ -68,8 +68,8 @@ format_html() {
     # Ensure the output file exists
     touch "$output_file"
 
-    # Write the formatted content to the output file
-    echo "$formatted_lines" > "$output_file"
+    # Write the formatted content to the output file, joining lines with newline characters
+    printf "%s\n" "${formatted_lines[@]}" > "$output_file"
     echo "HTML formatted and written to: $output_file"
 }
 
