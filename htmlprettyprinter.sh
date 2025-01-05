@@ -25,12 +25,12 @@ format_html() {
         text=$(echo "$text" | sed 's/^<!DOCTYPE[^>]*>//')
     fi
 
-    # Remove attributes from tags
-    text=$(echo "$text" | sed -E 's/<([a-zA-Z0-9]+)[^>]*>/\<\1>/g')
+    # Simplify tags while keeping < and >
+    text=$(echo "$text" | sed -E 's/<([a-zA-Z0-9]+)[^>]*?>/<\1>/g')
 
     # Define self-closing tags
     self_closing_tags=("area" "base" "br" "col" "embed" "hr" "img" "input" "link" "meta" "param" "source" "track" "wbr" "frame" "command" "keygen" "menuitem")
-    
+
     # Add <!DOCTYPE> to self-closing tag handling
     self_closing_tags+=("!DOCTYPE")
 
@@ -82,8 +82,13 @@ format_html() {
 }
 
 # Main script execution
-echo "Enter the absolute path to the HTML file:"
-read -r input_file
+if [ "$#" -ne 1 ]; then
+    echo "Usage: $0 <absolute_path_to_html_file>"
+    exit 1
+fi
+
+# Get the absolute path from the first argument
+input_file="$1"
 
 # Trim any leading or trailing spaces
 input_file=$(echo "$input_file" | xargs)
