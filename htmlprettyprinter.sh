@@ -17,6 +17,14 @@ format_html() {
     # Read the file and remove newlines/whitespace between tags
     text=$(tr -d '\n' < "$input_file" | sed 's/> *</></g')
 
+    # Remove comments (e.g., <!-- some comment -->)
+    text=$(echo "$text" | sed -E 's/<!--.*?-->//g')
+
+    # Remove the first line if it contains <!DOCTYPE>
+    if echo "$text" | grep -iqE '^<!DOCTYPE[^>]*>'; then
+        text=$(echo "$text" | sed 's/^<!DOCTYPE[^>]*>//')
+    fi
+
     # Remove attributes from tags
     text=$(echo "$text" | sed -E 's/<([a-zA-Z0-9]+)[^>]*>/\<\1>/g')
 
