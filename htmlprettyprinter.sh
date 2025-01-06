@@ -22,26 +22,25 @@ format_html_tree() {
         text=$(echo "$text" | sed -E 's/^<![dD][^>]*>//')
     fi
 
-    # Simplify tags while keeping < and >
+    # simplificare taguri
     text=$(echo "$text" | sed -E 's/<([a-zA-Z0-9]+)[^>]*?>/<\1>/g')
 
-    # Define self-closing tags
+    # definire taguri self-closing
     self_closing_tags=("area" "base" "br" "col" "embed" "hr" "img" "input" "link" "meta" "param" "source" "track" "wbr" "frame" "command" "keygen" "menuitem" "!DOCTYPE")
-    # self_closing_tags+=("!DOCTYPE")
 
-    # Initialize variables
+    # init variabile
     indent_level=0
     formatted_lines=()
     indent_stack=()
 
-    # Extract all tags
+    # extragere taguri
     tags=$(echo "$text" | grep -oP '<[^>]*?>')
 
-    # Process each tag
+    # procesarea tagurilor
     for tag in $tags; do
-        tag=$(echo "$tag" | xargs) # Trim spaces
+        tag=$(echo "$tag" | xargs) # strip spatii
 
-        # Check if the tag is self-closing
+        # taguri self-closing
         is_self_closing=false
         for self_tag in "${self_closing_tags[@]}"; do
             if echo "$tag" | grep -iqE "^<${self_tag}(/?>)?$"; then
@@ -50,13 +49,12 @@ format_html_tree() {
             fi
         done
 
-        # Check if the tag is a closing tag
+        # closing tag
         if echo "$tag" | grep -qE "^</[^>]+>$"; then
             indent_level=$((indent_level - 1))
             indent_stack[$indent_level]=0
         fi
 
-        # Determine the appropriate tree symbols
         tree_prefix=""
         for ((i = 0; i < indent_level; i++)); do
             if [[ "${indent_stack[$i]}" -eq 1 ]]; then
@@ -78,39 +76,32 @@ format_html_tree() {
             fi
         fi
 
-        # Add the tag to formatted lines
         formatted_lines+=("${tree_prefix}${tag}")
 
-        # If the tag is an opening tag, increase indent
+        # increase indent
         if echo "$tag" | grep -qE "^<[^/][^>]*>$" && [[ "$is_self_closing" == false ]]; then
             indent_stack[$indent_level]=1
             indent_level=$((indent_level + 1))
         fi
     done
 
-    # Write the formatted content to the output file
     printf "%s\n" "${formatted_lines[@]}" > "$output_file"
     echo "HTML tree formatted and written to: $output_file"
 }
 
-# Main script execution
 if [ "$#" -ne 1 ]; then
     echo "Usage: $0 <absolute_path_to_html_file>"
     exit 1
 fi
 
-# Get the absolute path from the first argument
 input_file="$1"
 
-# Trim any leading or trailing spaces
 input_file=$(echo "$input_file" | xargs)
 
-# Debug: Confirm the input file exists
 if [ ! -e "$input_file" ]; then
     echo "Debug: File does not exist at the path provided: $input_file"
     exit 1
 fi
 
-# Pass the input to the function
 format_html_tree "$input_file"
 exit 0
