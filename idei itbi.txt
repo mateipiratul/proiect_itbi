@@ -1,0 +1,12 @@
+- Am folosit comenzi precum "grep", "echo", "sed" si destul regex (regular expression) pentru a manipula fiecare linie din fisier cu usurinta.
+- Proiectul foloseste cai absolute pentru a identifica locatia fisierului care este manipulat;
+- Fisierul input este evident de tip .html;
+- Aplicatia nu este case sensitive, precum nici HTML5-ul nu este;
+- Afisarea este similara cu cea folosita in comanda "tree", sub forma de arbore cu descendentii fii amplasati cu un tab mai in dreapta decat parintele;
+- Scripting-ul a fost facut mai intai in python pentru a facilita o eficienta de brainstorming superioara
+- Pasii pe care ii urmeaza algoritmul:
+1. Citeste fisierul .html
+2. Da strip la spatii
+3. Creaza un string nou cu indentari in functie de "parantezarile" tag-urilor
+4. Afiseaza rezultatul in fisierul format_tree.txt
+
