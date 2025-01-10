@@ -11,48 +11,48 @@ format_html_tree() {
         exit 1
     fi
 
-    # Check if file has .html extension
+    # verificare extensie
     if [[ "$input_file" != *.html ]]; then
         echo "Error: The input file must have a .html extension."
         exit 1
     fi
 
-    # Remove newline/whitespace
+    # stergere newline si whitespace
     text=$(tr -d '\n' < "$input_file" | sed 's/> *</></g')
 
-    # Check for invalid tags with spaces after '<'
+    # verificare taguri invalide
     if echo "$text" | grep -qE '<\s+[^>]*>'; then
         echo "Error: Invalid tag detected (spaces after '<')."
         exit 1
     fi
 
-    # Remove comments
+    # stergere comentarii
     text=$(echo "$text" | sed -E 's/<!--.*?-->//g')
 
-    # Remove <!DOCTYPE>
+    # stergere <!DOCTYPE>
     if echo "$text" | grep -iqE '^<!DOCTYPE[^>]*>'; then
         text=$(echo "$text" | sed -E 's/^<![dD][^>]*>//')
     fi
 
-    # Simplify tags
+    # simplificarea tagurilor
     text=$(echo "$text" | sed -E 's/<([a-zA-Z0-9]+)[^>]*?>/<\1>/g')
 
-    # Define self-closing tags
+    # definirea tagurilor self-closing
     self_closing_tags=("area" "base" "br" "col" "embed" "hr" "img" "input" "link" "meta" "param" "source" "track" "wbr" "frame" "command" "keygen" "menuitem" "!DOCTYPE")
 
-    # Initialize variables
+    # initializarea variabilelor
     indent_level=0
     formatted_lines=()
     indent_stack=()
 
-    # Extract tags
+    # extragerea tagurilor
     tags=$(echo "$text" | grep -oP '<[^>]*?>')
 
-    # Process tags
+    # procesarea acestora
     for tag in $tags; do
-        tag=$(echo "$tag" | xargs) # Strip spaces
+        tag=$(echo "$tag" | xargs) # strip spatii
 
-        # Check for self-closing tags
+        # verificare taguri self-closing
         is_self_closing=false
         for self_tag in "${self_closing_tags[@]}"; do
             if echo "$tag" | grep -iqE "^<${self_tag}(/?>)?$"; then
@@ -61,7 +61,7 @@ format_html_tree() {
             fi
         done
 
-        # Closing tag
+        # taguri closing
         if echo "$tag" | grep -qE "^</[^>]+>$"; then
             indent_level=$((indent_level - 1))
             indent_stack[$indent_level]=0
@@ -90,7 +90,7 @@ format_html_tree() {
 
         formatted_lines+=("${tree_prefix}${tag}")
 
-        # Increase indent
+        # cresterea indentarii
         if echo "$tag" | grep -qE "^<[^/][^>]*>$" && [[ "$is_self_closing" == false ]]; then
             indent_stack[$indent_level]=1
             indent_level=$((indent_level + 1))
